@@ -41,8 +41,6 @@ long getTimeInMicroseconds()
 
 int main()
 {
-    printf("\n Hello world!\n");
-
     unsigned long black,white, red, blue;
     uint32_t  FPS = 30;
 
@@ -53,17 +51,13 @@ int main()
 	red = RGB(255,0,0);
 	blue = RGB(0,0,255);
 	
-	printf("\n Created variables!\n");
-    
     int windowWidth = 800; 
     int windowHeight = 600;
     win = XCreateSimpleWindow(dis,DefaultRootWindow(dis),0,0,	windowWidth, windowHeight, 0, white, black);
 
 	XSetStandardProperties(dis,win,"My Window","HI!",None,NULL,0,NULL);
-
 	XSelectInput(dis, win, ExposureMask|ButtonPressMask|KeyPressMask);
 
-	printf("\n Selected Inputs!\n");
 	/* create the Graphics Context */
     gc = XCreateGC(dis, win, 0,0);        
 
@@ -106,15 +100,12 @@ int main()
         ev.xexpose.height =0;
         ev.xexpose.count  =0;
         
-        
         int x = 20;
         int y = 20;
         
         unsigned long lastRepaint = getTimeInMicroseconds();
-        
-       
 
-	while(running) {		
+        while(running) {		
         /* get the next event and stuff it into our event variable.
 		   Note:  only events we set the mask for are detected!
 		*/
@@ -131,12 +122,10 @@ int main()
 		if (event.type==Expose && event.xexpose.count==0) {
 		/* the window was exposed redraw it! */
 			//printf("Exposed window, clearing!\n");
+
             
-            
-		}
+        }
 		
-		
-        
         if (event.type==KeyPress &&
 		    XLookupString(&event.xkey,text,255,&key,0)==1) {
 		/* use the XLookupString routine to convert the invent
@@ -154,10 +143,16 @@ int main()
 
 			printf("You pressed the %c key!\n",text[0]);
 		}
+		
 		if (event.type==ButtonPress) {
 		/* tell where the mouse Button was Pressed */
 			printf("You pressed a button at (%i,%i)\n",
 			event.xbutton.x,event.xbutton.y);
+            
+            //check if mouse click was in a button
+            
+            
+            
 		}
 
         if (event.xclient.data.l[0] == wmDeleteMessage)
@@ -165,14 +160,12 @@ int main()
             running = false;
 		}
 		
-		
 		XSetForeground(dis,gc,blue);
         XDrawRectangle(dis,win,gc,x,y,20,20);
         XFillRectangle(dis,win,gc,x,y,20,20);
         x++;
 		
 		lastRepaint = getTimeInMicroseconds();
-		//usleep(1000 / FPS - (end - lastRepaint));
         // see if this works on tinkerboard
         
 		XSync(dis,true); //at moment sync is disposing of all other messages, 
