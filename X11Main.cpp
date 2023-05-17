@@ -10,13 +10,13 @@
 #endif
 
 #include<stdint.h>
+#include "math.h"
+
 #include "x11window.cpp"
+#include "interactables.cpp"
 
 
-unsigned long RGB(int r, int g, int b)
-{
-	return b + (g<<8) + (r <<16);
-}
+
 
 long getTimeInMicroseconds() 
 {
@@ -27,42 +27,17 @@ long getTimeInMicroseconds()
 
 int main()
 {
-    unsigned long black,white, red, blue;
     
     uint32_t  FPS = 30;
-
-    dis = XOpenDisplay((char *)0);
-   	screen = DefaultScreen(dis);
-    
-	black = BlackPixel(dis,screen),	/* get color black */
-	white = WhitePixel(dis, screen);  /* get color white */
-    
-	red = RGB(255,0,0);
-	blue = RGB(0,0,255);
 	
     int windowWidth = 800; 
     int windowHeight = 600;
+    vec2i mousePos = {};
+    int testTimer = 0;
     
-    win = XCreateSimpleWindow(dis,DefaultRootWindow(dis),0,0,	windowWidth, windowHeight, 0, white, black);
-
-	XSetStandardProperties(dis,win,"My Window","HI!",None,NULL,0,NULL);
-	XSelectInput(dis, win, ExposureMask|ButtonPressMask|KeyPressMask);
-
-	/* create the Graphics Context */
-    gc = XCreateGC(dis, win, 0,0);        
-
-	/* here is another routine to set the foreground and background
-	   colors _currently_ in use in the window.
-	*/
+    SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
-	XSetBackground(dis,gc,white);
-	XSetForeground(dis,gc,black);
-
-	/* clear the window and bring it on top of the other windows */
-	XClearWindow(dis, win);
     
-	XMapRaised(dis, win);
-	
 	// TODO: seg faults here, maybe need to install custom fonts???.
 	//myFont = XLoadQueryFont(dis, "-misc-fixed-medium-r-normal--9-90-75-75-c-60-iso10646-1");
 	//XSetFont(dis, gc, myFont->fid);
@@ -111,7 +86,6 @@ int main()
             
             if (event.type==Expose && event.xexpose.count==0) {
 			//printf("Exposed window, clearing!\n")
-            
                 
             }
 		
@@ -138,7 +112,17 @@ int main()
 			printf("You pressed a button at (%i,%i)\n",
 			event.xbutton.x,event.xbutton.y);
             
+            mousePos.x = event.xbutton.x;
+            mousePos.y = event.xbutton.y;
             //check if mouse click was in a button
+            
+            
+            if(checkCollision(x,y,20,20,mousePos))
+            {
+                printf("We got a collision back!\n");
+                
+            }
+            
             }
 
             if (event.xclient.data.l[0] == wmDeleteMessage)
@@ -155,12 +139,18 @@ int main()
 		XSetForeground(dis,gc,blue);
         XDrawRectangle(dis,win,gc,x,y,20,20);
         XFillRectangle(dis,win,gc,x,y,20,20);
-        x++;
+        
+        testTimer++;
+        if(testTimer > 1)
+        {
+            x++;
+            testTimer = 0;
+        }
 		
 		lastRepaint = getTimeInMicroseconds();
         // see if this works on tinkerboard
         
-		XSync(dis,false);
+		XSync(dis,true);
 		//TODO: need a better way    
         usleep(1000*1000 / FPS);
 	}
