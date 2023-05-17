@@ -7,16 +7,25 @@
     #include <X11/Xlib.h>
     #include <X11/Xutil.h>
     #include <X11/Xos.h>
+    #include <unistd.h>
+    #include <sys/mman.h>
 #endif
 
 #include<stdint.h>
-#include "math.h"
 
+typedef uint32_t uint32;
+typedef int32_t int32;
+typedef uint16_t uint16;
+typedef int16_t int16;
+
+// .h files
+#include "math.h"
+#include "memory.cpp"
+#include "interactables.h"
+
+// .cpp files
 #include "x11window.cpp"
 #include "interactables.cpp"
-
-
-
 
 long getTimeInMicroseconds() 
 {
@@ -35,6 +44,11 @@ int main()
     vec2i mousePos = {};
     int testTimer = 0;
     
+    
+    void* memory = allocateMemoryArena(4096);
+    
+    
+    
     SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
 	// TODO: seg faults here, maybe need to install custom fonts???.
@@ -52,19 +66,9 @@ int main()
 
 	/* look for events forever... */
 	bool running = true;
-    
-        XEvent ev;
-        ev.xexpose.type = Expose;
-        ev.xexpose.display = dis;
-        ev.xexpose.window = win;
-        ev.xexpose.x = 0;
-        ev.xexpose.y - 0;
-        ev.xexpose.width = 0;
-        ev.xexpose.height =0;
-        ev.xexpose.count  =0;
         
-        int x = 20;
-        int y = 20;
+    int32 x = 20;
+    int32 y = 20;
         
         unsigned long lastRepaint = getTimeInMicroseconds();
 
@@ -78,51 +82,50 @@ int main()
         XSetForeground(dis,gc,0);
         XFillRectangle(dis,backBuffer,gc,0,0,windowWidth,windowHeight);
         
-        //try sending event everyframe.
-        XSendEvent(dis,win,false,ExposureMask,&ev);
-        
         while(XPending(dis))
         {
+            //make sure all events are handled.
             XNextEvent(dis, &event);
             
-            if (event.type==Expose && event.xexpose.count==0) {
-			//printf("Exposed window, clearing!\n")
+            if (event.type==Expose && event.xexpose.count==0)
+            {
+            
                 
             }
 		
-        if (event.type==KeyPress && XLookupString(&event.xkey,text,255,&key,0)==1) {
+            if (event.type==KeyPress && XLookupString(&event.xkey,text,255,&key,0)==1) {
 		/* use the XLookupString routine to convert the invent
 		   KeyPress data into regular text.  Weird but necessary...
 		*/
-			if (text[0]=='q') {
-				printf("Closing Window!\n");
-				CloseX(dis,win,gc);
-			}
-
-			if (text[0]=='s') {
-				XClearWindow(dis,win);
-				printf("The window has been cleared!\n");
+                if (text[0]=='q') 
+                {
+                    printf("Closing Window!\n");
+                    CloseX(dis,win,gc);
                 }
 
-			printf("You pressed the %c key!\n",text[0]);
-            
+                if (text[0]=='s') 
+                {
+                    XClearWindow(dis,win);
+                    printf("The window has been cleared!\n");
+                }
+
+                printf("You pressed the %c key!\n",text[0]);
             }
             
-            if (event.type==ButtonPress) {
+            if (event.type==ButtonPress || event.type==ButtonRelease) {
 		/* tell where the mouse Button was Pressed */
 			printf("You pressed a button at (%i,%i)\n",
 			event.xbutton.x,event.xbutton.y);
+            
             
             mousePos.x = event.xbutton.x;
             mousePos.y = event.xbutton.y;
             //check if mouse click was in a button
             
-            
-            if(checkCollision(x,y,20,20,mousePos))
-            {
-                printf("We got a collision back!\n");
-                
-            }
+                if(checkCollision(x,y,20,20,mousePos))
+                {
+                    printf("We got a collision back!\n");
+                }
             
             }
 
@@ -133,30 +136,29 @@ int main()
             
         }
         
-        unsigned long end = getTimeInMicroseconds();
+        uint32 end = getTimeInMicroseconds();
+        
+        //Drawing
 		XSetForeground(dis,gc,white);
+        
 		XDrawString(dis,backBuffer,gc,50,50,"hello",strlen("hello"));
 		
 		XSetForeground(dis,gc,blue);
         //XDrawRectangle(dis,win,gc,x,y,20,20);
         XFillRectangle(dis,backBuffer,gc,x,y,20,20);
-        
-        testTimer++;
-        if(testTimer > 1)
-        {
-            x++;
-            testTimer = 0;
-        }
+        x++;
 		
 		lastRepaint = getTimeInMicroseconds();
         // see if this works on tinkerboard
         
-		XSync(dis,true);
+		XSync(dis,false);
         XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
 		//TODO: need a better way    
         usleep(1000*1000 / FPS);
 	}
 
+	
+    deallocateMemoryArena(memory, 4096);
 	//clearup window stuff
     CloseX(dis,win,gc);
     
