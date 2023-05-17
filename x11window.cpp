@@ -4,6 +4,7 @@ int screen;
 Window win;
 GC gc;
 XFontStruct* myFont;
+Pixmap backBuffer;
 unsigned long black,white, red, blue;
 
 unsigned long RGB(int r, int g, int b)
@@ -30,13 +31,13 @@ static  void SetupSimpleWindow(const char* titleName, int windowWidth, int windo
     
     /* create the Graphics Context */
     gc = XCreateGC(dis, win, 0,0);  
+    backBuffer = XCreatePixmap(dis,win,windowWidth,windowHeight,24);
     
     XSetBackground(dis,gc,white);
 	XSetForeground(dis,gc,black);
     
     /* clear the window and bring it on top of the other windows */
 	XClearWindow(dis, win);
-    
 	XMapRaised(dis, win);
 }
 

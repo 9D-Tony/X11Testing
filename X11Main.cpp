@@ -37,7 +37,6 @@ int main()
     
     SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
-    
 	// TODO: seg faults here, maybe need to install custom fonts???.
 	//myFont = XLoadQueryFont(dis, "-misc-fixed-medium-r-normal--9-90-75-75-c-60-iso10646-1");
 	//XSetFont(dis, gc, myFont->fid);
@@ -75,7 +74,9 @@ int main()
 		*/
 
         //TODO: see if I can get to draw everyframe sucessfully with send event
-        XClearArea(dis,win,0,0,windowWidth,windowHeight,false);
+        //XClearArea(dis,win,0,0,windowWidth,windowHeight,false);
+        XSetForeground(dis,gc,0);
+        XFillRectangle(dis,backBuffer,gc,0,0,windowWidth,windowHeight);
         
         //try sending event everyframe.
         XSendEvent(dis,win,false,ExposureMask,&ev);
@@ -134,11 +135,11 @@ int main()
         
         unsigned long end = getTimeInMicroseconds();
 		XSetForeground(dis,gc,white);
-		XDrawString(dis,win,gc,50,50,"hello",strlen("hello"));
+		XDrawString(dis,backBuffer,gc,50,50,"hello",strlen("hello"));
 		
 		XSetForeground(dis,gc,blue);
-        XDrawRectangle(dis,win,gc,x,y,20,20);
-        XFillRectangle(dis,win,gc,x,y,20,20);
+        //XDrawRectangle(dis,win,gc,x,y,20,20);
+        XFillRectangle(dis,backBuffer,gc,x,y,20,20);
         
         testTimer++;
         if(testTimer > 1)
@@ -151,6 +152,7 @@ int main()
         // see if this works on tinkerboard
         
 		XSync(dis,true);
+        XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
 		//TODO: need a better way    
         usleep(1000*1000 / FPS);
 	}
