@@ -16,8 +16,10 @@ inline bool checkCollision(int32 x, int32 y, int32 width, int32 height, vec2i hi
 }
 
 
-void DrawInteractables()
+void DrawInteractable(clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
 {
+    XSetForeground(dis,gc,clickObj->colour);
     
+    XFillRectangle(dis,backBuffer,gc, clickObj->x,clickObj->y,clickObj->width,clickObj->height);
     
 }

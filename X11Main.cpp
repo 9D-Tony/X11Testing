@@ -37,17 +37,14 @@ long getTimeInMicroseconds()
 int main()
 {
     
-    uint32_t  FPS = 30;
+    uint32  FPS = 30;
 	
     int windowWidth = 800; 
     int windowHeight = 600;
     vec2i mousePos = {};
     int testTimer = 0;
     
-    
     void* memory = allocateMemoryArena(4096);
-    
-    
     
     SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
@@ -70,8 +67,15 @@ int main()
     int32 x = 20;
     int32 y = 20;
         
-        unsigned long lastRepaint = getTimeInMicroseconds();
+    uint32 lastRepaint = getTimeInMicroseconds();
 
+    clickable button01 = {};
+    button01.colour = red;
+    button01.width = 40;
+    button01.height = 20;
+    button01.x = 80;
+    button01.y = 80;
+    
         while(running) {		
         /* get the next event and stuff it into our event variable.
 		   Note:  only events we set the mask for are detected!
@@ -87,28 +91,47 @@ int main()
             //make sure all events are handled.
             XNextEvent(dis, &event);
             
+            //TODO: is the expose event even relivant anymore?
             if (event.type==Expose && event.xexpose.count==0)
             {
+                //printf("Expose Event!\n");
+            }
             
+            // if window resize
+             if(event.type == ConfigureNotify)
+            {
+                if(windowWidth != event.xconfigure.width)
+                {
+                    windowWidth = event.xconfigure.width;
+                }
                 
+                if(windowHeight != event.xconfigure.height)
+                {
+                    windowHeight = event.xconfigure.height;
+                }
             }
 		
+            //TODO: only handles ascii keys for the time being
             if (event.type==KeyPress && XLookupString(&event.xkey,text,255,&key,0)==1) {
 		/* use the XLookupString routine to convert the invent
 		   KeyPress data into regular text.  Weird but necessary...
 		*/
+                printf("keycode of pressed key: %x\n",event.xkey.keycode);
+                
                 if (text[0]=='q') 
                 {
-                    printf("Closing Window!\n");
+                    printf("q key pressed!\n");
+                   // CloseX(dis,win,gc);
+                }
+                
+                
+                if(event.xkey.keycode == 0x09)
+                {
+                    printf("Escape key pressed, closing window!\n");
                     CloseX(dis,win,gc);
                 }
-
-                if (text[0]=='s') 
-                {
-                    XClearWindow(dis,win);
-                    printf("The window has been cleared!\n");
-                }
-
+                
+                
                 printf("You pressed the %c key!\n",text[0]);
             }
             
@@ -146,13 +169,20 @@ int main()
 		XSetForeground(dis,gc,blue);
         //XDrawRectangle(dis,win,gc,x,y,20,20);
         XFillRectangle(dis,backBuffer,gc,x,y,20,20);
-        x++;
+        
+        DrawInteractable(&button01,dis,gc,backBuffer);
+        
+        if(x + 20 < windowWidth)
+        {
+            x += 2;
+        }
 		
 		lastRepaint = getTimeInMicroseconds();
         // see if this works on tinkerboard
         
-		XSync(dis,false);
+		XSync(dis,true);
         XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
+        
 		//TODO: need a better way    
         usleep(1000*1000 / FPS);
 	}

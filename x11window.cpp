@@ -27,7 +27,7 @@ static  void SetupSimpleWindow(const char* titleName, int windowWidth, int windo
     win = XCreateSimpleWindow(dis,DefaultRootWindow(dis),0,0,	windowWidth, windowHeight, 0, white, black);
 
 	XSetStandardProperties(dis,win,titleName,"HI!",None,NULL,0,NULL);
-	XSelectInput(dis, win, ExposureMask|ButtonPressMask|KeyPressMask);
+	XSelectInput(dis, win, ExposureMask|ButtonPressMask|KeyPressMask| StructureNotifyMask);
     
     /* create the Graphics Context */
     gc = XCreateGC(dis, win, 0,0);  
