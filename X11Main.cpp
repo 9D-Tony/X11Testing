@@ -11,12 +11,15 @@
     #include <sys/mman.h>
 #endif
 
+#include <assert.h>
 #include<stdint.h>
 
 typedef uint32_t uint32;
 typedef int32_t int32;
 typedef uint16_t uint16;
 typedef int16_t int16;
+typedef uint8_t uint8;
+typedef int8_t int8;
 
 // .h files
 #include "math.h"
@@ -36,15 +39,12 @@ long getTimeInMicroseconds()
 
 int main()
 {
-    
     uint32  FPS = 30;
-	
+    
     int windowWidth = 800; 
     int windowHeight = 600;
     vec2i mousePos = {};
     int testTimer = 0;
-    
-    void* memory = allocateMemoryArena(4096);
     
     SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
@@ -110,7 +110,8 @@ int main()
                     windowHeight = event.xconfigure.height;
                 }
             }
-		
+            
+            
             //TODO: only handles ascii keys for the time being
             if (event.type==KeyPress && XLookupString(&event.xkey,text,255,&key,0)==1) {
 		/* use the XLookupString routine to convert the invent
@@ -121,53 +122,54 @@ int main()
                 if (text[0]=='q') 
                 {
                     printf("q key pressed!\n");
-                   // CloseX(dis,win,gc);
                 }
                 
-                
-                if(event.xkey.keycode == 0x09)
+                if(event.xkey.keycode == 0x09) // escape Key
                 {
                     printf("Escape key pressed, closing window!\n");
                     CloseX(dis,win,gc);
                 }
                 
-                
                 printf("You pressed the %c key!\n",text[0]);
             }
             
             if (event.type==ButtonPress || event.type==ButtonRelease) {
-		/* tell where the mouse Button was Pressed */
-			printf("You pressed a button at (%i,%i)\n",
-			event.xbutton.x,event.xbutton.y);
+                
+            /* tell where the mouse Button was Pressed */
+                printf("You pressed a button at (%i,%i)\n",
+                event.xbutton.x,event.xbutton.y);
+                
+                mousePos.x = event.xbutton.x;
+                mousePos.y = event.xbutton.y;
             
-            
-            mousePos.x = event.xbutton.x;
-            mousePos.y = event.xbutton.y;
-            //check if mouse click was in a button
-            
+                //check if mouse click was in a button
                 if(checkCollision(x,y,20,20,mousePos))
+                {
+                    printf("We got a collision back!\n");
+                }
+                
+                
+                if(checkCollision(button01.x,button01.y,button01.width,button01.height,mousePos))
                 {
                     printf("We got a collision back!\n");
                 }
             
             }
 
+            // if X clicked on window
             if (event.xclient.data.l[0] == wmDeleteMessage)
             {
                 running = false;
             }
-            
         }
         
         uint32 end = getTimeInMicroseconds();
         
         //Drawing
 		XSetForeground(dis,gc,white);
-        
 		XDrawString(dis,backBuffer,gc,50,50,"hello",strlen("hello"));
 		
 		XSetForeground(dis,gc,blue);
-        //XDrawRectangle(dis,win,gc,x,y,20,20);
         XFillRectangle(dis,backBuffer,gc,x,y,20,20);
         
         DrawInteractable(&button01,dis,gc,backBuffer);
@@ -183,12 +185,11 @@ int main()
 		XSync(dis,true);
         XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
         
-		//TODO: need a better way    
+		//TODO: need a better way, measure how long the frame took and wait the extra milliseconds if it was fast.    
         usleep(1000*1000 / FPS);
 	}
 
 	
-    deallocateMemoryArena(memory, 4096);
 	//clearup window stuff
     CloseX(dis,win,gc);
     
