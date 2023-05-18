@@ -69,12 +69,21 @@ int main()
         
     uint32 lastRepaint = getTimeInMicroseconds();
 
-    clickable button01 = {};
+    Clickable button01 = {};
+    button01.type = BUTTON;
     button01.colour = red;
     button01.width = 40;
     button01.height = 20;
-    button01.x = 80;
+    button01.x = 60;
     button01.y = 80;
+    
+    Clickable dragger01 = {};
+    dragger01.type = DRAG;
+    dragger01.colour = blue;
+    dragger01.width = 20;
+    dragger01.height = 20;
+    dragger01.x = 120;
+    dragger01.y = 80;
     
         while(running) {		
         /* get the next event and stuff it into our event variable.
@@ -143,17 +152,22 @@ int main()
                 mousePos.y = event.xbutton.y;
             
                 //check if mouse click was in a button
-                if(checkCollision(x,y,20,20,mousePos))
+                if(CollisionBasic(x,y,20,20,mousePos))
                 {
                     printf("We got a collision back!\n");
                 }
                 
-                
-                if(checkCollision(button01.x,button01.y,button01.width,button01.height,mousePos))
+                if(ClickableCollision(&button01,mousePos))
                 {
                     printf("We got a collision back!\n");
+                    x = 0;
                 }
-            
+                
+                if(ClickableCollision(&dragger01,mousePos))
+                {
+                    printf("We got a collision back!\n");
+                    x = 0;
+                }
             }
 
             // if X clicked on window
@@ -172,7 +186,9 @@ int main()
 		XSetForeground(dis,gc,blue);
         XFillRectangle(dis,backBuffer,gc,x,y,20,20);
         
-        DrawInteractable(&button01,dis,gc,backBuffer);
+        DrawRect(&button01,dis,gc,backBuffer);
+        
+        DrawDragger(&dragger01,dis,gc,backBuffer);
         
         if(x + 20 < windowWidth)
         {
