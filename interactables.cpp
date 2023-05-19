@@ -9,8 +9,6 @@ inline bool CollisionBasic(int32 x, int32 y, int32 width, int32 height, vec2i hi
     {
         printf("Point Hit! at: %d:%d \n",hitPoint.x,hitPoint.y);
         return true;
-
-        
     }
     
         return false;
@@ -23,7 +21,7 @@ inline bool ClickableCollision(Clickable* button, vec2i hitPoint)
         hitPoint.y > button->y &&
         hitPoint.y < button->y + button->height)
     {
-        printf("Point Hit! at: %d:%d \n",hitPoint.x,hitPoint.y);
+        //printf("Point Hit! at: %d:%d \n",hitPoint.x,hitPoint.y);
         return true;
         
     }
@@ -57,4 +55,17 @@ void DrawDragger(Clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
     
     XFillPolygon(dis,backBuffer,gc,points,3,Complex, CoordModePrevious);
     
+}
+
+void DrawTextField(Clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
+{
+
+    XSetForeground(dis,gc,clickObj->color);
+    XFillRectangle(dis,backBuffer,gc, clickObj->x,clickObj->y,clickObj->width,clickObj->height);
+    
+    if(clickObj->type == FOCUS && clickObj->clickBoolType.focused == true)
+    {
+        XSetForeground(dis,gc,black);
+        XFillRectangle(dis,backBuffer,gc, clickObj->x + 4,clickObj->y + 2,4,clickObj->height - 4);
+    }
 }

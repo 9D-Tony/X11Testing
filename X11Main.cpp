@@ -3,8 +3,7 @@
 // basic X11 window
 #include<iostream>
 
-//X11 for linux, should work on most
-// arm based linux machines as well?
+//X11 for linux, work on linux arm machines?
 #if defined(__linux__)
     #include <X11/Xlib.h>
     #include <X11/Xutil.h>
@@ -77,6 +76,7 @@ int main()
 
     Clickable button01 = {};
     button01.type = BUTTON;
+     button01.clickBoolType.clicked = false;
     button01.color = red;
     button01.width = 40;
     button01.height = 20;
@@ -85,17 +85,28 @@ int main()
     
     Clickable dragger01 = {};
     dragger01.type = DRAG;
+    dragger01.clickBoolType.dragged = false;
     dragger01.color = RGB(134,135,134);
     dragger01.width = 10;
     dragger01.height = 10;
     dragger01.x = 120;
     dragger01.y = 80;
     
+    Clickable textField = {};
+    textField.type = FOCUS;
+    textField.clickBoolType.focused = false;
+    textField.color = RGB(134,135,134);
+    textField.width = 140;
+    textField.height = 35;
+    textField.x = 140;
+    textField.y = 120;
+    
         while(running) {		
         /* get the next event and stuff it into our event variable.
 		   Note:  only events we set the mask for are detected!
 		*/
 
+        //background clear color
         XSetForeground(dis,gc,0);
         
         XFillRectangle(dis,backBuffer,gc,0,0,windowWidth,windowHeight);
@@ -123,13 +134,11 @@ int main()
                     windowHeight = event.xconfigure.height;
                     windowChange = true;
                     
-                    
                 }else
                 {
                     windowX = event.xconfigure.x;
                     windowY = event.xconfigure.y;
                 }
-                
             }
             
             //TODO: only handles ascii keys for the time being
@@ -196,8 +205,6 @@ int main()
              {
                  
                  // TODO: find out why release doesn't always fire.
-                 printf("You released mouse button at (%i,%i), with button:%d \n",
-                event.xbutton.x,event.xbutton.y, event.xbutton.button);
                  
                  mousePos.x = event.xbutton.x;
                 mousePos.y = event.xbutton.y;
@@ -232,9 +239,20 @@ int main()
         mousePos.x = root_x;
         mousePos.y = root_y;
         
-         if(mouseHeldDown)
+         if(mouseHeldDown && CollisionBasic(x,y,20,20,mousePos))
         {
             x = root_x;
+        }
+        
+        if(mouseHeldDown && ClickableCollision(&textField,mousePos) && textField.type == FOCUS)
+        {
+            printf("text field hit\n");
+            textField.clickBoolType.focused = true;
+        }
+        
+         if(x + 20 <= windowWidth)
+        {
+            x += 1;
         }
         
         //Drawing
@@ -246,16 +264,12 @@ int main()
         
         DrawRect(&button01,dis,gc,backBuffer);
         DrawDragger(&dragger01,dis,gc,backBuffer);
-        
-        if(x + 20 <= windowWidth)
-        {
-            x += 2;
-        }
+        DrawTextField(&textField,dis,gc,backBuffer);
 		
 		lastRepaint = getTimeInMicroseconds();
-        // see if this works on tinkerboard
         
-		XSync(dis,true);
+		XSync(dis,false);
+        
         //backbuffer
         XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
         
