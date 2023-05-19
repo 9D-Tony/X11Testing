@@ -117,7 +117,8 @@ int main()
              if(event.type == ConfigureNotify)
             {
                 
-                if(windowHeight != event.xconfigure.height ||       windowWidth != event.xconfigure.width && windowX == event.xconfigure.x && windowY == event.xconfigure.y)
+                if((windowHeight != event.xconfigure.height ||       windowWidth != event.xconfigure.width) 
+                    && windowX == event.xconfigure.x && windowY == event.xconfigure.y)
                 {
                     
                     windowWidth = event.xconfigure.width;
@@ -125,13 +126,12 @@ int main()
                     windowChange = true;
                     
                     
+                }else
+                {
+                    windowX = event.xconfigure.x;
+                    windowY = event.xconfigure.y;
                 }
                 
-            }
-            
-            if(event.type == GravityNotify)
-            {
-                printf("Gravity notify");
             }
             
             //TODO: only handles ascii keys for the time being
