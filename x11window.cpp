@@ -49,7 +49,6 @@ static void ResizeBackbuffer(uint32 windowWidth, uint32 windowHeight)
     backBuffer = XCreatePixmap(dis,win,windowWidth,windowHeight,24);
     printf("Recreating backBuffer!\n");
     
-    
 }
 
 static void CloseX(Display* dis, Window win, GC gc)

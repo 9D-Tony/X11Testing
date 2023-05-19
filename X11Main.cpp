@@ -96,8 +96,6 @@ int main()
 		   Note:  only events we set the mask for are detected!
 		*/
 
-        //TODO: see if I can get to draw everyframe sucessfully with send event
-        //XClearArea(dis,win,0,0,windowWidth,windowHeight,false);
         XSetForeground(dis,gc,0);
         
         XFillRectangle(dis,backBuffer,gc,0,0,windowWidth,windowHeight);
@@ -113,11 +111,11 @@ int main()
                 printf("Expose Event!\n");
             }
             
-            // if window resize
+            // Window resize
              if(event.type == ConfigureNotify)
             {
                 
-                if((windowHeight != event.xconfigure.height ||       windowWidth != event.xconfigure.width) 
+                if((windowHeight != event.xconfigure.height || windowWidth != event.xconfigure.width) 
                     && windowX == event.xconfigure.x && windowY == event.xconfigure.y)
                 {
                     
@@ -164,37 +162,49 @@ int main()
                 
                 mousePos.x = event.xbutton.x;
                 mousePos.y = event.xbutton.y;
-            
-                mouseHeldDown = true;
-                //check if mouse click was in a button
-                if(CollisionBasic(x,y,20,20,mousePos))
-                {
-                    printf("We got a collision back!\n");
-                }
                 
-                if(ClickableCollision(&button01,mousePos))
+                // mouse button events:
+                // button 1 left mouse
+                // button 2 middle mouse
+                // button 3 right mouse
+                // button 4 scroll up mouse
+                // button 5 scroll down mouse
+                if(event.xbutton.button == Button1)
                 {
-                    printf("We got a collision back!\n");
-                    x = 0;
-                }
-                
-                if(ClickableCollision(&dragger01,mousePos))
-                {
-                    printf("We got a collision back!\n");
-                    x = 0;
+                    mouseHeldDown = true;
+                    //check if mouse click was in a button
+                    if(CollisionBasic(x,y,20,20,mousePos))
+                    {
+                        printf("We got a collision back!\n");
+                    }
+                    
+                    if(ClickableCollision(&button01,mousePos))
+                    {
+                        printf("We got a collision back!\n");
+                        x = 0;
+                    }
+                    
+                    if(ClickableCollision(&dragger01,mousePos))
+                    {
+                        printf("We got a collision back!\n");
+                        x = 0;
+                    }
                 }
             }
             
              if (event.type==ButtonRelease)
              {
                  
-                 printf("You released mouse button at (%i,%i)\n",
-                event.xbutton.x,event.xbutton.y);
+                 // TODO: find out why release doesn't always fire.
+                 printf("You released mouse button at (%i,%i), with button:%d \n",
+                event.xbutton.x,event.xbutton.y, event.xbutton.button);
                  
                  mousePos.x = event.xbutton.x;
                 mousePos.y = event.xbutton.y;
-                
-                mouseHeldDown = false;
+                if(event.xbutton.button == Button1)
+                {
+                    mouseHeldDown = false;
+                }
             }
 
             // if X clicked on window
@@ -221,7 +231,6 @@ int main()
         
         mousePos.x = root_x;
         mousePos.y = root_y;
-        
         
          if(mouseHeldDown)
         {

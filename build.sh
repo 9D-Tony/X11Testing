@@ -12,22 +12,22 @@ fi
 #check for arguments, if no arguments then build debug 
 #then run application
 if [[ -z $1 ]]; then
-    if g++ -o debug/mainX11.out X11Main.cpp -lX11 -Wpointer-arith;  then
-    echo "debug build Successful"  && ./debug/mainX11.out;
+    if g++ -o debug/mainX11.out X11Main.cpp -lX11 -Wpointer-arith -g;  then
+    echo "debug build successful"  && ./debug/mainX11.out;
     fi
     exit 1
 fi
 
-if [[ $1 -eq "release" ]]; then
+if [[ $1 == "release" ]]; then
     if g++ -o release/mainX11.out X11Main.cpp -O2 -lX11 -Wpointer-arith;  then
-    echo "release build Successful"  && ./release/mainX11.out;
+    echo "release build successful"  && ./release/mainX11.out;
     fi
     exit 1
 fi
 
-if [[ $1 -eq "debug" ]]; then
-    if g++ -o debug/mainX11.out X11Main.cpp -lX11 -Wpointer-arith;  then
-    echo "debug build Successful"  && ./debug/mainX11.out;
+if [[ $1 == "debug" ]]; then
+    if g++ -o debug/mainX11.out X11Main.cpp -lX11 -Wpointer-arith -g;  then
+    echo "debug build successful"  && ./debug/mainX11.out;
     fi
     exit 1
 fi
