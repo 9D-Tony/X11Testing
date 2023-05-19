@@ -11,7 +11,7 @@ enum clickType
 struct Clickable
 {
     clickType type;
-    uint32 colour;
+    uint32 color;
     int32 x;
     int32 y;
     int32 width;

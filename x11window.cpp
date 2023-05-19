@@ -27,7 +27,8 @@ static  void SetupSimpleWindow(const char* titleName, int windowWidth, int windo
     win = XCreateSimpleWindow(dis,DefaultRootWindow(dis),0,0,	windowWidth, windowHeight, 0, white, black);
 
 	XSetStandardProperties(dis,win,titleName,"HI!",None,NULL,0,NULL);
-	XSelectInput(dis, win, ExposureMask|ButtonPressMask|KeyPressMask| StructureNotifyMask);
+    
+	XSelectInput(dis, win, ExposureMask|ButtonPressMask| ButtonReleaseMask|KeyPressMask| StructureNotifyMask | SubstructureNotifyMask);
     
     /* create the Graphics Context */
     gc = XCreateGC(dis, win, 0,0);  
@@ -39,6 +40,16 @@ static  void SetupSimpleWindow(const char* titleName, int windowWidth, int windo
     /* clear the window and bring it on top of the other windows */
 	XClearWindow(dis, win);
 	XMapRaised(dis, win);
+}
+
+static void ResizeBackbuffer(uint32 windowWidth, uint32 windowHeight)
+{
+     XFreePixmap(dis,backBuffer);
+            
+    backBuffer = XCreatePixmap(dis,win,windowWidth,windowHeight,24);
+    printf("Recreating backBuffer!\n");
+    
+    
 }
 
 static void CloseX(Display* dis, Window win, GC gc)

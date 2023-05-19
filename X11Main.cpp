@@ -1,3 +1,5 @@
+
+
 // basic X11 window
 #include<iostream>
 
@@ -45,6 +47,9 @@ int main()
     int windowHeight = 600;
     vec2i mousePos = {};
     int testTimer = 0;
+    int resizeTimer = 0;
+    int windowX, windowY;
+    bool windowChange = false;
     
     SetupSimpleWindow("Testing X11",windowWidth,windowHeight);
     
@@ -63,6 +68,7 @@ int main()
 
 	/* look for events forever... */
 	bool running = true;
+    bool mouseHeldDown = false;
         
     int32 x = 20;
     int32 y = 20;
@@ -71,7 +77,7 @@ int main()
 
     Clickable button01 = {};
     button01.type = BUTTON;
-    button01.colour = red;
+    button01.color = red;
     button01.width = 40;
     button01.height = 20;
     button01.x = 60;
@@ -79,9 +85,9 @@ int main()
     
     Clickable dragger01 = {};
     dragger01.type = DRAG;
-    dragger01.colour = blue;
-    dragger01.width = 20;
-    dragger01.height = 20;
+    dragger01.color = RGB(134,135,134);
+    dragger01.width = 10;
+    dragger01.height = 10;
     dragger01.x = 120;
     dragger01.y = 80;
     
@@ -93,6 +99,7 @@ int main()
         //TODO: see if I can get to draw everyframe sucessfully with send event
         //XClearArea(dis,win,0,0,windowWidth,windowHeight,false);
         XSetForeground(dis,gc,0);
+        
         XFillRectangle(dis,backBuffer,gc,0,0,windowWidth,windowHeight);
         
         while(XPending(dis))
@@ -103,29 +110,36 @@ int main()
             //TODO: is the expose event even relivant anymore?
             if (event.type==Expose && event.xexpose.count==0)
             {
-                //printf("Expose Event!\n");
+                printf("Expose Event!\n");
             }
             
             // if window resize
              if(event.type == ConfigureNotify)
             {
-                if(windowWidth != event.xconfigure.width)
+                
+                if(windowHeight != event.xconfigure.height ||       windowWidth != event.xconfigure.width && windowX == event.xconfigure.x && windowY == event.xconfigure.y)
                 {
+                    
                     windowWidth = event.xconfigure.width;
+                    windowHeight = event.xconfigure.height;
+                    windowChange = true;
+                    
+                    
                 }
                 
-                if(windowHeight != event.xconfigure.height)
-                {
-                    windowHeight = event.xconfigure.height;
-                }
             }
             
+            if(event.type == GravityNotify)
+            {
+                printf("Gravity notify");
+            }
             
             //TODO: only handles ascii keys for the time being
             if (event.type==KeyPress && XLookupString(&event.xkey,text,255,&key,0)==1) {
 		/* use the XLookupString routine to convert the invent
 		   KeyPress data into regular text.  Weird but necessary...
 		*/
+                
                 printf("keycode of pressed key: %x\n",event.xkey.keycode);
                 
                 if (text[0]=='q') 
@@ -142,7 +156,7 @@ int main()
                 printf("You pressed the %c key!\n",text[0]);
             }
             
-            if (event.type==ButtonPress || event.type==ButtonRelease) {
+            if (event.type==ButtonPress) {
                 
             /* tell where the mouse Button was Pressed */
                 printf("You pressed a button at (%i,%i)\n",
@@ -151,6 +165,7 @@ int main()
                 mousePos.x = event.xbutton.x;
                 mousePos.y = event.xbutton.y;
             
+                mouseHeldDown = true;
                 //check if mouse click was in a button
                 if(CollisionBasic(x,y,20,20,mousePos))
                 {
@@ -169,6 +184,18 @@ int main()
                     x = 0;
                 }
             }
+            
+             if (event.type==ButtonRelease)
+             {
+                 
+                 printf("You released mouse button at (%i,%i)\n",
+                event.xbutton.x,event.xbutton.y);
+                 
+                 mousePos.x = event.xbutton.x;
+                mousePos.y = event.xbutton.y;
+                
+                mouseHeldDown = false;
+            }
 
             // if X clicked on window
             if (event.xclient.data.l[0] == wmDeleteMessage)
@@ -177,7 +204,29 @@ int main()
             }
         }
         
+        if(windowChange)
+        {
+            //if window changed recreate backbuffer  
+            ResizeBackbuffer(windowWidth,windowHeight);
+            windowChange = false;
+        }
+        
         uint32 end = getTimeInMicroseconds();
+        
+        Window child, root;
+        int win_x, win_y, root_x, root_y = 0;
+        uint32 mask = 0;
+        
+        XQueryPointer(dis,win,&child,&root,&win_x,&win_y,&root_x,&root_y,&mask);
+        
+        mousePos.x = root_x;
+        mousePos.y = root_y;
+        
+        
+         if(mouseHeldDown)
+        {
+            x = root_x;
+        }
         
         //Drawing
 		XSetForeground(dis,gc,white);
@@ -187,10 +236,9 @@ int main()
         XFillRectangle(dis,backBuffer,gc,x,y,20,20);
         
         DrawRect(&button01,dis,gc,backBuffer);
-        
         DrawDragger(&dragger01,dis,gc,backBuffer);
         
-        if(x + 20 < windowWidth)
+        if(x + 20 <= windowWidth)
         {
             x += 2;
         }
@@ -199,6 +247,7 @@ int main()
         // see if this works on tinkerboard
         
 		XSync(dis,true);
+        //backbuffer
         XCopyArea(dis,backBuffer,win,gc,0,0,windowWidth,windowHeight,0,0);
         
 		//TODO: need a better way, measure how long the frame took and wait the extra milliseconds if it was fast.    

@@ -33,7 +33,7 @@ inline bool ClickableCollision(Clickable* button, vec2i hitPoint)
 
 void DrawRect(Clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
 {
-    XSetForeground(dis,gc,clickObj->colour);
+    XSetForeground(dis,gc,clickObj->color);
     
     XFillRectangle(dis,backBuffer,gc, clickObj->x,clickObj->y,clickObj->width,clickObj->height);
 }
@@ -41,12 +41,11 @@ void DrawRect(Clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
 void DrawDragger(Clickable* clickObj, Display* dis, GC gc, Pixmap backBuffer)
 {
     
-     XSetForeground(dis,gc,clickObj->colour);
+     XSetForeground(dis,gc,clickObj->color);
     
     XFillRectangle(dis,backBuffer,gc, clickObj->x,clickObj->y,clickObj->width,clickObj->height);
     
     XPoint points[3] = {};
-    
     points[0].x = clickObj->x;
      points[0].y = clickObj->y + clickObj->height;
      
