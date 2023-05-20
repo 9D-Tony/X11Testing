@@ -12,6 +12,14 @@
     #include <sys/mman.h>
 #endif
 
+//compiler definition for arm, needed if doing any SIMD or
+// arm thread work.
+#if defined(__arm__)
+    #define COMPILER "ARM\n"
+#else
+    #define COMPILER "x86\n"
+#endif
+
 #include <assert.h>
 #include<stdint.h>
 
@@ -41,6 +49,7 @@ long getTimeInMicroseconds()
 int main()
 {
     uint32  FPS = 30;
+    printf(COMPILER);
     
     int windowWidth = 800; 
     int windowHeight = 600;
